@@ -1,0 +1,91 @@
+export const LESSONS = [
+  {
+    id: '1',
+    title: 'The Alphabet',
+    description: 'Learn the 26 letters of the English alphabet',
+    icon: 'book-outline',
+    color: '#0D9488',
+    lessons: 5,
+    duration: '15 min',
+    level: 'Beginner',
+  },
+  {
+    id: '2',
+    title: 'Letter Sounds',
+    description: 'Master the sounds each letter makes',
+    icon: 'volume-high-outline',
+    color: '#F97316',
+    lessons: 8,
+    duration: '20 min',
+    level: 'Beginner',
+  },
+  {
+    id: '3',
+    title: 'Simple Words',
+    description: 'Read your first set of simple words',
+    icon: 'text-outline',
+    color: '#8B5CF6',
+    lessons: 6,
+    duration: '25 min',
+    level: 'Beginner',
+  },
+  {
+    id: '4',
+    title: 'Short Sentences',
+    description: 'Build and read short sentences',
+    icon: 'chatbubbles-outline',
+    color: '#EC4899',
+    lessons: 7,
+    duration: '30 min',
+    level: 'Intermediate',
+  },
+  {
+    id: '5',
+    title: 'Everyday Reading',
+    description: 'Practice reading everyday texts',
+    icon: 'newspaper-outline',
+    color: '#14B8A6',
+    lessons: 10,
+    duration: '35 min',
+    level: 'Intermediate',
+  },
+  {
+    id: '6',
+    title: 'Comprehension',
+    description: 'Understand what you read',
+    icon: 'bulb-outline',
+    color: '#EAB308',
+    lessons: 8,
+    duration: '30 min',
+    level: 'Advanced',
+  },
+];
+
+export const ONBOARDING_SLIDES = [
+  {
+    id: '1',
+    title: 'Welcome to ReadWell',
+    description: 'A safe, supportive space for adults learning to read. Start your reading journey today.',
+    icon: 'book',
+  },
+  {
+    id: '2',
+    title: 'Learn at Your Pace',
+    description: 'No pressure, no judgment. Take lessons step by step, at a speed that works for you.',
+    icon: 'time',
+  },
+  {
+    id: '3',
+    title: 'Track Your Progress',
+    description: 'See how far you have come. Every lesson brings you closer to reading with confidence.',
+    icon: 'trophy',
+  },
+];
+
+export const USER_STATS = {
+  lessonsCompleted: 0,
+  totalLessons: 36,
+  streak: 0,
+  wordsLearned: 0,
+  timeSpent: 0,
+};

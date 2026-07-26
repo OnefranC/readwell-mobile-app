@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "jsx": "react-native",
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": { "@/*": ["src/*"] },
+    "lib": ["es2022"]
+  },
+  "include": ["src/**/*", "App.js", "index.js"],
+  "exclude": ["node_modules", "android", "ios", ".expo", "dist", "web-build"]
+}
