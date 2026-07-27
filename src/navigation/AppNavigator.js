@@ -1,74 +1,101 @@
 import React from 'react';
+import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING } from '../constants/colors';
+import { COLORS, SPACING, RADIUS, TYPE } from '../theme';
 
 import HomeScreen from '../screens/HomeScreen';
-import LessonsScreen from '../screens/LessonsScreen';
-import LessonDetailScreen from '../screens/LessonDetailScreen';
-import QuizScreen from '../screens/QuizScreen';
-import ProgressScreen from '../screens/ProgressScreen';
-import ProfileScreen from '../screens/ProfileScreen';
+import LearningScreen from '../screens/LearningScreen';
+import WishlistScreen from '../screens/WishlistScreen';
+import AchievementsScreen from '../screens/AchievementsScreen';
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
 
-const TAB_ICONS = {
-  Home: { focused: 'home', unfocused: 'home-outline' },
-  Lessons: { focused: 'book', unfocused: 'book-outline' },
-  Progress: { focused: 'bar-chart', unfocused: 'bar-chart-outline' },
-  Profile: { focused: 'person', unfocused: 'person-outline' },
+const TAB_META = {
+  Home: { icon: 'home-outline', active: 'home', label: 'Home' },
+  Learning: { icon: 'play-circle-outline', active: 'play-circle', label: 'Learning' },
+  Wishlist: { icon: 'heart-outline', active: 'heart', label: 'Wishlist' },
+  Achievements: { icon: 'person-outline', active: 'person', label: 'Achievement' },
 };
 
-function HomeTabs() {
+/** Custom tab bar so the active pill matches the Figma treatment. */
+function TabBar({ state, descriptors, navigation }) {
+  return (
+    <View style={styles.bar}>
+      {state.routes.map((route, index) => {
+        const focused = state.index === index;
+        const meta = TAB_META[route.name] || { icon: 'ellipse-outline', label: route.name };
+        const { options } = descriptors[route.key];
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+          if (!focused && !event.defaultPrevented) navigation.navigate(route.name);
+        };
+
+        return (
+          <Pressable
+            key={route.key}
+            onPress={onPress}
+            style={styles.tab}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: focused }}
+            accessibilityLabel={meta.label}
+            testID={options.tabBarTestID}
+          >
+            <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
+              <Ionicons
+                name={focused ? meta.active : meta.icon}
+                size={22}
+                color={focused ? COLORS.primary : COLORS.textSecondary}
+              />
+            </View>
+            <Text
+              style={[styles.label, focused && styles.labelActive]}
+              numberOfLines={1}
+            >
+              {meta.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+export default function MainTabs() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarIcon: ({ focused, color, size }) => {
-          const icons = TAB_ICONS[route.name];
-          const iconName = focused ? icons.focused : icons.unfocused;
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.textTertiary,
-        tabBarStyle: {
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: COLORS.background,
-          borderTopWidth: 0,
-          elevation: 20,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.1,
-          shadowRadius: 12,
-          height: 88,
-          paddingBottom: SPACING.xxxxl,
-          paddingTop: SPACING.sm,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-        },
-      })}
+      screenOptions={{ headerShown: false }}
+      tabBar={(props) => <TabBar {...props} />}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Lessons" component={LessonsScreen} />
-      <Tab.Screen name="Progress" component={ProgressScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Learning" component={LearningScreen} />
+      <Tab.Screen name="Wishlist" component={WishlistScreen} />
+      <Tab.Screen name="Achievements" component={AchievementsScreen} />
     </Tab.Navigator>
   );
 }
 
-export default function AppNavigator() {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Main" component={HomeTabs} />
-      <Stack.Screen name="LessonDetail" component={LessonDetailScreen} />
-      <Stack.Screen name="Quiz" component={QuizScreen} />
-    </Stack.Navigator>
-  );
-}
+const styles = StyleSheet.create({
+  bar: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.divider,
+    paddingTop: SPACING.sm,
+    paddingBottom: Platform.OS === 'ios' ? SPACING.xxl : SPACING.md,
+    paddingHorizontal: SPACING.sm,
+  },
+  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2 },
+  iconWrap: {
+    width: 46, height: 30, borderRadius: RADIUS.sm,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  iconWrapActive: { backgroundColor: COLORS.primarySurface },
+  label: { ...TYPE.caption, color: COLORS.textSecondary, fontSize: 11 },
+  labelActive: { color: COLORS.primary },
+});
