@@ -77,6 +77,7 @@ const ICONS_3D = {
   sun: require('../../../assets/icons3d/sun.png'),
   heart: require('../../../assets/icons3d/heart.png'),
   abc: require('../../../assets/icons3d/abc.png'),
+  apple: require('../../../assets/icons3d/apple.png'),
   trophy: require('../../../assets/icons3d/trophy.png'),
   flame: require('../../../assets/icons3d/flame.png'),
 };

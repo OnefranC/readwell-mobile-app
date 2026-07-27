@@ -68,7 +68,13 @@ import { COLORS, SPACING, RADIUS, TYPE, SHADOWS } from '../theme';
 ### 3D icons
 
 `<Icon3D name="trophy" size={40} />` renders from `assets/icons3d/`. Available:
-`book star medal target audio bolt cap pencil globe crown rocket lock check bell chat sun heart abc trophy flame`.
+`book star medal target audio bolt cap pencil globe crown rocket lock check bell chat sun heart abc apple trophy flame`.
+
+### Safe areas
+
+Always import `SafeAreaView` from `react-native-safe-area-context`, never from
+`react-native` — the core component is a no-op on Android and lets content slide
+under the status bar.
 
 ## State
 

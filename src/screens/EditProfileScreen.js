@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, SafeAreaView, Pressable,
+  View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Pressable,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPE } from '../theme';
 import { Header, Field, PrimaryButton, Avatar, Banner } from '../components/ui';

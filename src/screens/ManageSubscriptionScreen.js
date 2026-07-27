@@ -1,7 +1,6 @@
 import React from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, Pressable, SafeAreaView, Alert,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, RADIUS, TYPE } from '../theme';
 import { Header, PrimaryButton, EmptyState } from '../components/ui';

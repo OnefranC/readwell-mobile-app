@@ -1,7 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, Pressable, SafeAreaView, PanResponder,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, PanResponder } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, RADIUS, TYPE } from '../theme';
 import { CURRICULUM } from '../constants/data';
@@ -167,10 +166,11 @@ export default function LessonScreen({ route, navigation }) {
 
 function iconForWord(word = '') {
   const w = word.toLowerCase();
-  if (w.includes('apple')) return 'heart';
+  if (w.includes('apple')) return 'apple';
   if (w.includes('ball')) return 'target';
   if (w.includes('cat') || w.includes('dog') || w.includes('fish')) return 'star';
   if (w.includes('egg')) return 'sun';
+  if (w.includes('book') || w.includes('read')) return 'book';
   return 'abc';
 }
 
@@ -224,7 +224,8 @@ const styles = StyleSheet.create({
   },
   ghostLetter: {
     fontSize: 150, fontWeight: '800',
-    color: COLORS.surfaceSunken,
+    // needs to read as a guide the learner can follow, not a near-white ghost
+    color: COLORS.primarySurface,
     position: 'absolute',
   },
   inkDot: {

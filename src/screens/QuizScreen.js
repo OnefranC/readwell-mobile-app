@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, Pressable, SafeAreaView,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, RADIUS, TYPE } from '../theme';
 import { QUIZZES, CURRICULUM } from '../constants/data';
@@ -96,7 +95,7 @@ export default function QuizScreen({ route, navigation }) {
 
         {q.image ? (
           <View style={styles.imageCard}>
-            <Icon3D name="heart" size={128} />
+            <Icon3D name={q.image} size={128} />
           </View>
         ) : null}
 

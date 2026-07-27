@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, SafeAreaView,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, RADIUS, TYPE } from '../theme';
 import { Header, Field, PrimaryButton, Icon3D, Banner } from '../components/ui';

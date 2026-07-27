@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import {
-  View, Text, StyleSheet, Image, Pressable, ScrollView, SafeAreaView,
-} from 'react-native';
+import { View, Text, StyleSheet, Image, Pressable, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, RADIUS, TYPE, SHADOWS } from '../theme';
 import { IMAGES, LANGUAGES, GOALS } from '../constants/data';
