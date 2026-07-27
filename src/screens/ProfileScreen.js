@@ -1,102 +1,267 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Animated, TouchableOpacity, Switch, Alert } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable, Switch, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../constants/colors';
+import { COLORS, SPACING, RADIUS, TYPE } from '../theme';
+import { Header, Avatar, SecondaryButton, Icon3D } from '../components/ui';
 import { useApp } from '../context/AppContext';
 
 export default function ProfileScreen({ navigation }) {
   const { state, dispatch } = useApp();
   const { user, settings } = state;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const name = user?.name || 'Learner';
 
-  useEffect(() => {
-    Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
-  }, [fadeAnim]);
-
-  const handleLogout = () => {
-    Alert.alert('Log Out', 'Are you sure you want to log out?', [
+  const logout = () => {
+    Alert.alert('Log out', 'You can sign back in any time. Your progress is saved.', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Log Out', style: 'destructive', onPress: () => { dispatch({ type: 'LOGOUT' }); navigation.replace('Login'); } },
+      {
+        text: 'Log out',
+        style: 'destructive',
+        onPress: () => {
+          dispatch({ type: 'LOGOUT' });
+          navigation.reset({ index: 0, routes: [{ name: 'SignIn' }] });
+        },
+      },
     ]);
   };
 
-  const menuItems = [
-    { icon: 'person-outline', title: 'Edit Profile', screen: null },
-    { icon: 'notifications-outline', title: 'Notifications', toggle: true, value: settings.notifications, onValueChange: (v) => dispatch({ type: 'UPDATE_SETTINGS', payload: { notifications: v } }) },
-    { icon: 'volume-high-outline', title: 'Sound Effects', toggle: true, value: settings.soundEffects, onValueChange: (v) => dispatch({ type: 'UPDATE_SETTINGS', payload: { soundEffects: v } }) },
-    { icon: 'moon-outline', title: 'Dark Mode', toggle: true, value: settings.darkMode, onValueChange: (v) => dispatch({ type: 'UPDATE_SETTINGS', payload: { darkMode: v } }) },
-    { icon: 'help-circle-outline', title: 'Help & Support', screen: null },
-    { icon: 'document-text-outline', title: 'Terms of Service', screen: null },
-    { icon: 'shield-checkmark-outline', title: 'Privacy Policy', screen: null },
-  ];
-
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
-          <Text style={styles.title}>Profile</Text>
-        </Animated.View>
+    <SafeAreaView style={styles.root}>
+      <Header
+        title="My Profile"
+        onBack={() => navigation.goBack()}
+        right={
+          <Pressable
+            onPress={() => navigation.navigate('Settings')}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Settings"
+          >
+            <Ionicons name="settings-sharp" size={22} color={COLORS.textPrimary} />
+          </Pressable>
+        }
+      />
 
-        <Animated.View style={[styles.profileCard, SHADOWS.md, { opacity: fadeAnim }]}>
-          <View style={styles.avatar}>
-            <Ionicons name="person" size={48} color={COLORS.primary} />
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <View style={styles.hero}>
+          <View style={styles.avatarWrap}>
+            <View style={styles.dashRing}>
+              <Avatar name={name} uri={user?.avatar} size={104} />
+            </View>
+            <Pressable
+              style={styles.camera}
+              accessibilityRole="button"
+              accessibilityLabel="Change profile photo"
+            >
+              <Ionicons name="camera" size={15} color={COLORS.textInverse} />
+            </Pressable>
           </View>
-          <Text style={styles.profileName}>{user?.name || 'Learner'}</Text>
-          <Text style={styles.profileEmail}>{user?.email || 'learner@readwell.com'}</Text>
-          <TouchableOpacity style={styles.editButton}>
-            <Text style={styles.editButtonText}>Edit Profile</Text>
-          </TouchableOpacity>
-        </Animated.View>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.role}>
+            {state.plan === 'pro' ? 'ReadWell Pro Member' : 'Passionate Learner'}
+          </Text>
+          <SecondaryButton
+            title="Edit Profile"
+            size="md"
+            onPress={() => navigation.navigate('EditProfile')}
+            style={styles.editBtn}
+          />
+        </View>
 
-        <Animated.View style={[styles.menuSection, { opacity: fadeAnim }]}>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.menuItem} activeOpacity={0.7}>
-              <View style={styles.menuItemLeft}>
-                <View style={styles.menuIcon}>
-                  <Ionicons name={item.icon} size={22} color={COLORS.primary} />
-                </View>
-                <Text style={styles.menuItemTitle}>{item.title}</Text>
-              </View>
-              {item.toggle ? (
-                <Switch value={item.value} onValueChange={item.onValueChange} trackColor={{ false: COLORS.border, true: COLORS.primaryLight }} thumbColor={item.value ? COLORS.primary : COLORS.textTertiary} />
-              ) : (
-                <Ionicons name="chevron-forward" size={20} color={COLORS.textTertiary} />
-              )}
-            </TouchableOpacity>
-          ))}
-        </Animated.View>
+        {state.isGuest ? (
+          <View style={styles.guestCard}>
+            <Icon3D name="rocket" size={40} />
+            <View style={{ flex: 1, marginLeft: SPACING.md }}>
+              <Text style={styles.guestTitle}>Save your progress</Text>
+              <Text style={styles.guestMsg}>Create a free account to keep your streak and badges.</Text>
+            </View>
+          </View>
+        ) : null}
 
-        <Animated.View style={[styles.dangerSection, { opacity: fadeAnim }]}>
-          <TouchableOpacity style={styles.logoutButton} activeOpacity={0.7} onPress={handleLogout}>
-            <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
-            <Text style={styles.logoutText}>Log Out</Text>
-          </TouchableOpacity>
-        </Animated.View>
+        <View style={styles.statsCard}>
+          <View style={styles.statsHead}>
+            <Ionicons name="stats-chart" size={17} color={COLORS.primary} />
+            <Text style={styles.statsTitle}>Total Progress</Text>
+          </View>
+          <View style={styles.statsRow}>
+            <Stat value={state.daysActive} label="DAYS ACTIVE" />
+            <View style={styles.vRule} />
+            <Stat value={(state.minutesLearned / 60).toFixed(1)} label="HOURS LEARNED" />
+            <View style={styles.vRule} />
+            <Stat value={state.earnedBadges.length} label="BADGES" />
+          </View>
+        </View>
 
-        <Text style={styles.version}>ReadWell v1.0.0</Text>
+        <Text style={styles.sectionTitle}>Preferences</Text>
+
+        <ToggleRow
+          icon="volume-high"
+          tint={COLORS.primarySurface}
+          color={COLORS.primary}
+          title="Audio Support"
+          subtitle="Read aloud text"
+          value={settings.audioSupport}
+          onChange={(v) => dispatch({ type: 'UPDATE_SETTINGS', payload: { audioSupport: v } })}
+        />
+        <ToggleRow
+          icon="notifications"
+          tint={COLORS.orangeSurface}
+          color={COLORS.orange}
+          title="Notification Reminders"
+          subtitle="Daily goal alerts"
+          value={settings.notifications}
+          onChange={(v) => dispatch({ type: 'UPDATE_SETTINGS', payload: { notifications: v } })}
+        />
+
+        <Text style={styles.sectionTitle}>Account</Text>
+
+        <LinkRow
+          icon="trophy-outline"
+          title="My Achievements"
+          onPress={() => navigation.navigate('Main', { screen: 'Achievements' })}
+        />
+        <LinkRow
+          icon="card-outline"
+          title="Manage Subscription"
+          value={state.plan === 'pro' ? 'Pro' : 'Free'}
+          onPress={() => navigation.navigate('ManageSubscription')}
+        />
+        <LinkRow
+          icon="settings-outline"
+          title="Settings"
+          onPress={() => navigation.navigate('Settings')}
+        />
+
+        <Pressable
+          onPress={logout}
+          style={styles.logout}
+          accessibilityRole="button"
+          accessibilityLabel="Log out"
+        >
+          <Ionicons name="log-out-outline" size={19} color={COLORS.error} />
+          <Text style={styles.logoutText}>Log Out</Text>
+        </Pressable>
+
+        <Text style={styles.version}>ReadWell v2.0.0</Text>
       </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+function Stat({ value, label }) {
+  return (
+    <View style={styles.stat}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 }
 
+function ToggleRow({ icon, tint, color, title, subtitle, value, onChange }) {
+  return (
+    <View style={styles.row}>
+      <View style={[styles.rowIcon, { backgroundColor: tint }]}>
+        <Ionicons name={icon} size={19} color={color} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.rowTitle}>{title}</Text>
+        {subtitle ? <Text style={styles.rowSub}>{subtitle}</Text> : null}
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onChange}
+        trackColor={{ false: COLORS.surfaceSunken, true: COLORS.primary }}
+        thumbColor="#FFFFFF"
+        accessibilityLabel={title}
+      />
+    </View>
+  );
+}
+
+function LinkRow({ icon, title, value, onPress }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+    >
+      <View style={[styles.rowIcon, { backgroundColor: COLORS.surfaceMuted }]}>
+        <Ionicons name={icon} size={19} color={COLORS.textPrimary} />
+      </View>
+      <Text style={[styles.rowTitle, { flex: 1 }]}>{title}</Text>
+      {value ? <Text style={styles.rowValue}>{value}</Text> : null}
+      <Ionicons name="chevron-forward" size={19} color={COLORS.textTertiary} />
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  scrollContent: { paddingBottom: 100 },
-  header: { paddingHorizontal: SPACING.xxl, paddingTop: SPACING.xxxxxl, paddingBottom: SPACING.xl },
-  title: { fontSize: 28, fontWeight: '800', color: COLORS.textPrimary },
-  profileCard: { marginHorizontal: SPACING.xxl, backgroundColor: COLORS.surfaceElevated, borderRadius: RADIUS.xl, padding: SPACING.xxl, alignItems: 'center', marginBottom: SPACING.xxxl },
-  avatar: { width: 96, height: 96, borderRadius: 48, backgroundColor: COLORS.primarySurface, alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.lg },
-  profileName: { fontSize: 22, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 4 },
-  profileEmail: { fontSize: 14, color: COLORS.textSecondary, marginBottom: SPACING.lg },
-  editButton: { paddingHorizontal: SPACING.xl, paddingVertical: SPACING.sm, borderRadius: RADIUS.md, borderWidth: 1, borderColor: COLORS.primary },
-  editButtonText: { fontSize: 14, fontWeight: '600', color: COLORS.primary },
-  menuSection: { marginHorizontal: SPACING.xxl, backgroundColor: COLORS.surfaceElevated, borderRadius: RADIUS.lg, marginBottom: SPACING.xxxl, ...SHADOWS.sm },
-  menuItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: SPACING.lg, paddingHorizontal: SPACING.lg, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
-  menuItemLeft: { flexDirection: 'row', alignItems: 'center', gap: SPACING.md },
-  menuIcon: { width: 36, height: 36, borderRadius: RADIUS.sm, backgroundColor: COLORS.primarySurface, alignItems: 'center', justifyContent: 'center' },
-  menuItemTitle: { fontSize: 16, fontWeight: '500', color: COLORS.textPrimary },
-  dangerSection: { marginHorizontal: SPACING.xxl, marginBottom: SPACING.xxl },
-  logoutButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: SPACING.sm, paddingVertical: SPACING.lg, backgroundColor: COLORS.errorSurface, borderRadius: RADIUS.lg, borderWidth: 1, borderColor: COLORS.error + '30' },
-  logoutText: { fontSize: 16, fontWeight: '600', color: COLORS.error },
-  version: { textAlign: 'center', fontSize: 13, color: COLORS.textTertiary },
+  root: { flex: 1, backgroundColor: COLORS.background },
+  scroll: { paddingHorizontal: SPACING.xl, paddingBottom: SPACING.huge },
+
+  hero: { alignItems: 'center', paddingVertical: SPACING.lg },
+  avatarWrap: { position: 'relative' },
+  dashRing: {
+    padding: 5, borderRadius: 62,
+    borderWidth: 2, borderColor: COLORS.primary, borderStyle: 'dashed',
+  },
+  camera: {
+    position: 'absolute', bottom: 4, right: 4,
+    width: 32, height: 32, borderRadius: 16,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2.5, borderColor: COLORS.background,
+  },
+  name: { ...TYPE.h2, color: COLORS.textPrimary, marginTop: SPACING.md },
+  role: { ...TYPE.body, color: COLORS.textSecondary, marginTop: 1 },
+  editBtn: { marginTop: SPACING.md, paddingHorizontal: SPACING.xxl, borderRadius: RADIUS.pill },
+
+  guestCard: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: COLORS.accentSoft,
+    borderRadius: RADIUS.md, padding: SPACING.lg, marginBottom: SPACING.lg,
+  },
+  guestTitle: { ...TYPE.h4, color: COLORS.textPrimary },
+  guestMsg: { ...TYPE.small, color: COLORS.textSecondary, marginTop: 1 },
+
+  statsCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.md,
+    padding: SPACING.lg,
+    borderWidth: 1, borderColor: COLORS.border,
+  },
+  statsHead: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  statsTitle: { ...TYPE.h4, color: COLORS.textPrimary },
+  statsRow: { flexDirection: 'row', alignItems: 'center', marginTop: SPACING.lg },
+  stat: { flex: 1, alignItems: 'center' },
+  statValue: { ...TYPE.h2, color: COLORS.primary, fontSize: 26 },
+  statLabel: { ...TYPE.caption, color: COLORS.textSecondary, marginTop: 2, fontSize: 10 },
+  vRule: { width: 1, height: 38, backgroundColor: COLORS.divider },
+
+  sectionTitle: { ...TYPE.h3, color: COLORS.textPrimary, marginTop: SPACING.xl, marginBottom: SPACING.md },
+
+  row: {
+    flexDirection: 'row', alignItems: 'center', gap: SPACING.md,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
+    borderWidth: 1, borderColor: COLORS.border,
+  },
+  rowIcon: {
+    width: 40, height: 40, borderRadius: RADIUS.sm,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  rowTitle: { ...TYPE.bodyStrong, color: COLORS.textPrimary, fontSize: 16 },
+  rowSub: { ...TYPE.small, color: COLORS.textSecondary, marginTop: 1 },
+  rowValue: { ...TYPE.small, color: COLORS.textSecondary, marginRight: 2 },
+
+  logout: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: SPACING.sm,
+    marginTop: SPACING.xl, paddingVertical: SPACING.lg,
+    backgroundColor: COLORS.errorSurface, borderRadius: RADIUS.md,
+  },
+  logoutText: { ...TYPE.button, color: COLORS.error },
+  version: { ...TYPE.small, color: COLORS.textTertiary, textAlign: 'center', marginTop: SPACING.lg },
 });

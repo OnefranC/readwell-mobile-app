@@ -1,58 +1,71 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING } from '../constants/colors';
+import { View, Text, StyleSheet, Animated, ImageBackground, Easing } from 'react-native';
+import { COLORS, TYPE } from '../theme';
+import { IMAGES } from '../constants/data';
 import { useApp } from '../context/AppContext';
 
+/**
+ * Splash — wordmark fades up over a tinted library photograph.
+ * Routes once persisted state has hydrated.
+ */
 export default function SplashScreen({ navigation }) {
   const { state } = useApp();
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
+  const fade = useRef(new Animated.Value(0)).current;
+  const rise = useRef(new Animated.Value(14)).current;
+  const veil = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
-      Animated.spring(scaleAnim, { toValue: 1, tension: 50, friction: 7, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
+      Animated.timing(fade, { toValue: 1, duration: 700, useNativeDriver: true }),
+      Animated.timing(rise, {
+        toValue: 0, duration: 700, easing: Easing.out(Easing.cubic), useNativeDriver: true,
+      }),
+      Animated.timing(veil, { toValue: 1, duration: 900, useNativeDriver: true }),
     ]).start();
+  }, [fade, rise, veil]);
 
-    const timer = setTimeout(() => {
-      if (state.isLoggedIn) {
-        navigation.replace('App');
-      } else if (state.hasCompletedOnboarding) {
-        navigation.replace('Login');
-      } else {
-        navigation.replace('Onboarding');
-      }
-    }, 2500);
-
-    return () => clearTimeout(timer);
-  }, [fadeAnim, scaleAnim, slideAnim, navigation, state.hasCompletedOnboarding, state.isLoggedIn]);
+  useEffect(() => {
+    if (!state.hydrated) return;
+    const t = setTimeout(() => {
+      if (!state.hasOnboarded) navigation.replace('Onboarding');
+      else if (state.isLoggedIn || state.isGuest) navigation.replace('Main');
+      else navigation.replace('SignIn');
+    }, 1400);
+    return () => clearTimeout(t);
+  }, [state.hydrated, state.hasOnboarded, state.isLoggedIn, state.isGuest, navigation]);
 
   return (
-    <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} style={styles.container}>
-      <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ scale: scaleAnim }, { translateY: slideAnim }] }]}>
-        <View style={styles.iconContainer}>
-          <Ionicons name="book" size={64} color={COLORS.textInverse} />
-        </View>
-        <Text style={styles.title}>ReadWell</Text>
-        <Text style={styles.subtitle}>Your Reading Journey Begins Here</Text>
-      </Animated.View>
-      <Animated.View style={[styles.footer, { opacity: fadeAnim }]}>
-        <Text style={styles.footerText}>For Adult Learners</Text>
-      </Animated.View>
-    </LinearGradient>
+    <View style={styles.root}>
+      <ImageBackground source={IMAGES.splashLibrary} style={styles.bg} resizeMode="cover">
+        <Animated.View style={[styles.tint, { opacity: veil }]} />
+        <Animated.View style={[styles.center, { opacity: fade, transform: [{ translateY: rise }] }]}>
+          <Text style={styles.wordmark}>ReadWell</Text>
+          <View style={styles.rule} />
+          <Text style={styles.tagline}>Your journey to reading starts here</Text>
+        </Animated.View>
+      </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  content: { alignItems: 'center' },
-  iconContainer: { width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.xxl },
-  title: { fontSize: 40, fontWeight: '800', color: COLORS.textInverse, letterSpacing: -0.5 },
-  subtitle: { fontSize: 16, color: 'rgba(255,255,255,0.85)', marginTop: SPACING.sm },
-  footer: { position: 'absolute', bottom: SPACING.xxxxl },
-  footerText: { fontSize: 14, color: 'rgba(255,255,255,0.7)', fontWeight: '500' },
+  root: { flex: 1, backgroundColor: COLORS.primary },
+  bg: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  tint: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(15,118,110,0.78)' },
+  center: { alignItems: 'center', paddingHorizontal: 32 },
+  wordmark: {
+    fontSize: 44,
+    fontWeight: '800',
+    color: COLORS.textInverse,
+    letterSpacing: -0.8,
+  },
+  rule: {
+    width: 46, height: 3, borderRadius: 2,
+    backgroundColor: COLORS.accent, marginTop: 14, marginBottom: 14,
+  },
+  tagline: {
+    ...TYPE.body,
+    color: 'rgba(255,255,255,0.92)',
+    textAlign: 'center',
+  },
 });

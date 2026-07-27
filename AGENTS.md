@@ -1,6 +1,6 @@
 # ReadWell
 
-Expo SDK 53 project (React Native 0.76.9, New Architecture enabled). A reading app for adult learners with lessons, quizzes, and progress tracking.
+Expo SDK 53 project (React Native 0.76.9, New Architecture enabled). A reading app for adult learners: multi-language courses, letter-tracing lessons, quizzes, gamified progress, and a Pro subscription.
 
 ## Commands
 
@@ -12,52 +12,86 @@ npx expo start --ios
 npx expo start --web
 ```
 
+> `npm install` may fail on the `ngrok` postinstall in restricted networks.
+> Use `npm install --ignore-scripts` if the binary download is blocked.
+
 ### Quality & tooling
 
 ```bash
-npm run lint            # ESLint (flat config: eslint.config.js)
+npm run lint            # ESLint (flat config: eslint.config.mjs)
 npm run lint:fix        # ESLint with --fix
-npm run typecheck       # TypeScript tsc --noEmit (uses tsconfig.json)
+npm run typecheck       # TypeScript tsc --noEmit
 npm test                # Jest (jest-expo preset)
-npm run test:watch      # Jest watch mode
-npm run test:coverage   # Jest with coverage report
 npm run generate-assets # Regenerate placeholder PNGs in assets/
 ```
 
 ## Structure
 
-- `App.js` — root component; StackNavigator wrapping auth flow + `AppNavigator`
-- `index.js` — registers App via `registerRootComponent`
-- `app.json` — Expo config (slug: `readwell`, bundle: `com.onefranc.readwell`)
-- `assets/` — app icons & splash image (generated; regenerable via `npm run generate-assets`)
-- `src/`
-  - `components/` — `Button.js`, `Card.js`, `InputField.js`
-  - `constants/` — `colors.js` (theme tokens), `data.js`, `lessons.js`
-  - `context/` — `AppContext.js` (reducer + AsyncStorage persistence)
-  - `hooks/` — (empty; reserved)
-  - `navigation/` — `AppNavigator.js` (bottom tabs + detail/quiz stack)
-  - `screens/` — Splash, Onboarding, Login, Signup, Home, Lessons, LessonDetail, Quiz, Progress, Profile
-  - `utils/` — (reserved)
-- `scripts/generate-assets.js` — generates placeholder PNGs (no native deps)
-- `android/` — native Android project
+- `App.js` — root stack: entry flow → `Main` tabs → detail/commerce screens
+- `src/theme/` — **single source of truth** for colour, spacing, radius, type, shadow
+- `src/components/ui/` — design-system primitives (`Button`, `Field`, `Card`, `Chip`,
+  `ProgressBar`, `Icon3D`, `Avatar`, `EmptyState`, `Banner`, `Skeleton`, `Header`)
+- `src/components/` — composite overlays: `AchievementModal`, `ShareSheet`, `GooglePaySheet`
+- `src/constants/data.js` — courses, curriculum, quizzes, badges, leaderboard, plans
+- `src/context/AppContext.js` — reducer + AsyncStorage persistence + derived selectors
+- `src/navigation/AppNavigator.js` — bottom tabs (Home / Learning / Wishlist / Achievement)
+- `src/screens/` — 26 screens (see below)
+- `assets/images/` — HD photography (hero, onboarding, course thumbnails)
+- `assets/icons3d/` — 20 3D icons with real alpha channels
 
-## Configuration files
+### Screen map
 
-- `eslint.config.js` — ESLint flat config (React + React Native + hooks rules)
-- `tsconfig.json` — self-contained JS-compatible config (allowJs, checkJs off); typecheck-only (no `.ts` files yet)
-- `jsconfig.json` — editor IntelliSense for plain JS (no TS strictness)
-- `jest.config.js` — Jest config using `jest-expo` preset
-- `jest.setup.js` — Jest setup file (extend with `@testing-library/jest-native` if needed)
-- `__mocks__/fileMock.js` — asset stub for Jest
-- `babel.config.js` — `babel-preset-expo`
+| Flow | Screens |
+|---|---|
+| Entry | Splash, Onboarding (3 steps), SignIn, SignUp, ForgotPassword |
+| Tabs | Home, Learning, Wishlist, Achievements |
+| Discovery | Search (browse / results / empty), CourseDetail |
+| Learning | Curriculum, Lesson (tracing), Quiz, LessonComplete |
+| Social | Leaderboard, Notifications |
+| Account | Profile, EditProfile, Settings |
+| Commerce | Plans, PaymentDetails, PaymentSuccess, ManageSubscription |
 
-## Theme tokens
+## Design system
 
-Brand color is teal `#0D9488` (see `src/constants/colors.js`). Spacing, radius, and shadow tokens are also exported there.
+Import everything from `src/theme`:
+
+```js
+import { COLORS, SPACING, RADIUS, TYPE, SHADOWS } from '../theme';
+```
+
+- **Primary** deep teal `#0F766E` — buttons, headings, active tabs
+- **Accent** turquoise `#2DD4BF` — XP, pills, selected toggles
+- **Canvas** `#F6F8F9` with white cards
+- Type scale runs `display → h1…h4 → bodyLg/body → small → caption`
+- `src/constants/colors.js` is a deprecated re-export kept for compatibility
+
+### 3D icons
+
+`<Icon3D name="trophy" size={40} />` renders from `assets/icons3d/`. Available:
+`book star medal target audio bolt cap pencil globe crown rocket lock check bell chat sun heart abc apple trophy flame`.
+
+### Safe areas
+
+Always import `SafeAreaView` from `react-native-safe-area-context`, never from
+`react-native` — the core component is a no-op on Android and lets content slide
+under the status bar.
+
+## State
+
+`useApp()` exposes `{ state, dispatch, courseProgress, nextLesson, isLessonUnlocked, level, completeLesson }`.
+State persists to AsyncStorage under `@readwell/v2`. Lessons unlock sequentially —
+`isLessonUnlocked` gates on the previous lesson being complete.
+
+## Edge cases covered
+
+Empty wishlist / search / curriculum · locked Pro content · guest mode ·
+form validation (email, Luhn card check, expiry, CVV, password strength) ·
+declined payment (card ending `0000`) · offline & error banners · skeleton loaders ·
+first-run zero states · accessibility labels and roles throughout.
 
 ## Gotchas
 
 - Scaffolded manually (`create-expo-app` fails on this machine: Node v24 + WSL UNC path issue).
-- Plain JS with `@babel/core` + `babel-preset-expo`. TypeScript is available for typechecking/editing only (no `.ts` files yet); `tsconfig.json` is configured with `allowJs: true`.
+- Plain JS; TypeScript is typecheck-only (`allowJs`, no `.ts` files).
 - `typedRoutes` experiment is off in `app.json`.
-- After running `npm install`, new dev deps (ESLint, Jest, TypeScript, jest-expo) will be added. The dev server will work without installing them, but `lint`/`test`/`typecheck` require `npm install` first.
+- Screenshots in `docs/screenshots/` are generated from source — see `docs/DESIGN.md`.
